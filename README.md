@@ -10,6 +10,10 @@ The sample spring 2027 garden shows the dashboard, planting journal, and monthly
 | --- | --- | --- |
 | [![Garden overview with upcoming tasks, frost planning date, and planting cards](docs/screenshots/overview.jpg)](docs/screenshots/overview.jpg) | [![Planting journal with searchable cards for vegetables, pollinator plants, and herbs](docs/screenshots/planting-journal.jpg)](docs/screenshots/planting-journal.jpg) | [![April planting calendar showing hardening off, transplanting, direct sowing, and an estimated harvest](docs/screenshots/calendar.jpg)](docs/screenshots/calendar.jpg) |
 
+The searchable plant picker includes named varieties and their harvest or bloom expectations:
+
+[![Plant picker showing Blueberry Pie delphinium and its early-to-midsummer bloom expectation](docs/screenshots/plant-picker.jpg)](docs/screenshots/plant-picker.jpg)
+
 ## Run
 
 From this folder, run `npm run dev`, then visit http://localhost:5173.
@@ -21,7 +25,11 @@ Run date calculation checks with `npm test`.
 - Overview with pending / overdue milestones and planting cards
 - Individual planting batches for indoor seed starts, outdoor trays, direct sowing, or purchased transplants
 - Editable sowing, hardening, and transplant dates; quantity, variety, garden spot, and field notes
-- Packet-specific days to harvest / bloom, counted from sowing or transplanting
+- 31 searchable plant presets, including all 26 requested vegetables, fruits, herbs, and flowers
+- Variety-specific maturity values, optional harvest ranges, and editable bloom / harvest seasons
+- Days to harvest / bloom counted from sowing, transplanting, or several true leaves
+- Seasonal expectations beside the calendar for established flowers, fig, and blackberry plants
+- Source links in the picker and planting details; purchased-plant defaults for named clonal cultivars
 - Recording actual sow / transplant dates updates the related maturity estimate
 - Unknown perennial bloom timing can be left at zero instead of assigning a first-year deadline
 - Harvest / observation journal and repeat batches
@@ -30,6 +38,17 @@ Run date calculation checks with `npm test`.
 - Browser localStorage persistence with JSON backup export / import
 
 The app starts with a clearly labeled sample spring 2027 garden, viewed as of March 15. Choose “Start my own garden” to remove the sample and begin your journal. Dates are estimates, not forecasts. There is no live weather, automatic ZIP lookup, push notification service, or account sync. Changing frost settings affects defaults for new plantings only.
+
+## Catalog timing
+
+`catalog.js` contains the plant references and defaults; `planner.js` calculates milestones. Values were checked against Burpee, breeders, and NC State Extension on October 22, 2026. Source links are available in each preset.
+
+- Tomato maturity counts from transplanting. New Sungold batches use Burpee’s 65-day value; saved batches keep their existing values.
+- New lettuce and Mini-Me watermelon batches follow Burpee’s direct-sowing convention: count from several true leaves. The default 14-day sow-to-true-leaves allowance is editable. Recording the actual true-leaf date updates harvest timing.
+- Sweet / bell peppers have a general 60–90-day range until a specific variety is supplied. Two Tasty uses an approximate 70-day planning value from Burpee’s 2023 catalog; check the packet because the current product page has no maturity value.
+- Flower seasons describe established plants, with notes about first-year expectations. There are no invented day-based bloom deadlines for perennials. Fig and Galaxy blackberry use seasonal harvest guidance and establishment notes.
+- Fantasia and Dasante Blue delphiniums have notes about zone 8a being warmer than Burpee’s listed range.
+- Presets are choices for new planting batches; expanding the catalog does not create planting records or alter existing records. Old JSON backups remain supported.
 
 ## Growing references
 
