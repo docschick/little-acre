@@ -2,6 +2,14 @@
 
 A small, responsive garden planner made with plain JavaScript, CSS, and botanical SVG illustrations. No build step or runtime dependencies.
 
+## Screenshots
+
+The sample spring 2027 garden shows the dashboard, planting journal, and monthly calendar. Select an image to see it at full size.
+
+| Overview | Planting journal | Calendar |
+| --- | --- | --- |
+| [![Garden overview with upcoming tasks, frost planning date, and planting cards](docs/screenshots/overview.jpg)](docs/screenshots/overview.jpg) | [![Planting journal with searchable cards for vegetables, pollinator plants, and herbs](docs/screenshots/planting-journal.jpg)](docs/screenshots/planting-journal.jpg) | [![April planting calendar showing hardening off, transplanting, direct sowing, and an estimated harvest](docs/screenshots/calendar.jpg)](docs/screenshots/calendar.jpg) |
+
 ## Run
 
 From this folder, run `npm run dev`, then visit http://localhost:5173.
