@@ -18,6 +18,8 @@ export const plants={
   blackCherry:tomato('Black Cherry',65,'tomato-black-cherry-prod001929','Indeterminate heirloom cherry tomato.'),
   amishPaste:{...tomato('Amish Paste',74,'tomato-amish-paste-prod002037','Indeterminate heirloom paste tomato. Burpee describes 74–85 days after transplanting.'),daysMax:85},
   bibb:lettuce('Burpee Bibb',75,'lettuce-burpee-bibb-prod000734'),
+  // Burpee product and maturity guidance checked 2026-11-09.
+  buttercrunch:lettuce('Buttercrunch',65,'lettuce-buttercrunch-prod000735'),
   lettuce:lettuce('Black Seeded Simpson',45,'lettuce-black-seeded-simpson-prod000732'),
   fourSeasons:lettuce('Four Seasons',55,'lettuce-four-seasons-prod000741'),
   dynamite:lettuce('Dynamite',65,'lettuce-dynamite-prod100112'),
