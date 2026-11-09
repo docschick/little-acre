@@ -55,8 +55,8 @@ for(const existing of [false,true])test(`changing lettuce preserves an entered s
   ui.open(existing?seed.id:undefined,existing?undefined:seed);
   ui.form.elements.sow.value='2026-11-01';
   ui.form.elements.sow.onchange();
-  ui.form.elements.plant.value='bibb';
-  ui.form.elements.plant.onchange({target:ui.form.elements.plant});
+  const search=ui.control('#catalog-search');search.value='bibb';search.oninput({target:search});
+  ui.control('#catalog-results').children.find(el=>el.dataset.seedChoice==='bibb').onclick();
   assert.equal(ui.form.elements.sow.value,'2026-11-01');
   assert.equal(ui.form.elements.method.value,'growstand');
   ui.form.onsubmit({preventDefault(){}});
@@ -119,11 +119,12 @@ test('every variety is reachable by paging and browsing preserves entered fields
   ui.control('#catalog-all').onclick();
   assert.equal(ui.control('#catalog-results').hidden,false);
   const found=new Set();
-  do{
+  const total=Object.keys(plants).length;
+  for(let i=0;i<=Math.ceil(total/6);i++){
     for(const button of ui.control('#catalog-results').children)found.add(button.dataset.seedChoice);
     if(ui.control('#catalog-next').disabled)break;
     ui.control('#catalog-next').onclick();
-  }while(found.size<=Object.keys(plants).length);
+  }
   assert.equal(found.size,Object.keys(plants).length);
   assert.ok(found.has('zinnia'),'Varieties beyond the old cap remain reachable');
   assert.equal(ui.form.elements.quantity.value,'12');

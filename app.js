@@ -137,7 +137,6 @@ function edit(id,seed){
     $('#catalog-next').onclick=()=>{pickerPage++;updatePicker()};
     $('#catalog-shortcuts').querySelectorAll('[data-quick-crop]').forEach(el=>el.onclick=()=>{pickerCategory='';pickerCrop=el.dataset.quickCrop;pickerQuery='';resetPicker()});
     updatePicker();
-    f.elements.plant.onchange=e=>selectVariety(e.target.value);
     f.elements.kind.onchange=()=>{capture();form()};
     f.elements.basis.onchange=()=>{capture();form()};
     f.elements.method.onchange=()=>{
