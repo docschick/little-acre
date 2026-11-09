@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
-import {seedCategories,cropName,catalogCrops,findSeeds} from './seed-picker.js';
+import {seedCategories,seedCategory,cropName,catalogCrops,findSeeds,varietyPage} from './seed-picker.js';
 import {plants,methods,addDays,defaultBatch,plantKinds,isFlower,expectations,schedule} from './planner.js';
 
 const settings={zip:'27540',zone:'8a',frost:'2027-04-06',fall:'2027-11-03'};
@@ -10,10 +10,14 @@ const appSource=readFileSync(new URL('./app.js',import.meta.url),'utf8');
 // Run the real editor and its event handlers with a small form-only DOM adapter.
 // No application startup, localStorage, or browser garden records are touched.
 const editorSource=appSource.slice(appSource.indexOf('function edit('),appSource.indexOf('function detail('));
-const optionsSource=appSource.slice(appSource.indexOf('function plantOptions('),appSource.indexOf('function growingGuide('));
 function editor(state){
   let form,message;
   const controls=new Map();
+  const makeControl=()=>({html:'',children:[],close(){},focus(){this.focused=true},set innerHTML(html){
+    this.html=html;
+    this.children=[...html.matchAll(/<button\b([^>]*)>/g)].map(([,attrs])=>({focus(){this.focused=true},dataset:Object.fromEntries([...attrs.matchAll(/data-([\w-]+)="([^"]*)"/g)].map(([,key,value])=>[key.replace(/-([a-z])/g,(_,c)=>c.toUpperCase()),value]))}));
+  },get innerHTML(){return this.html},querySelectorAll(selector){const keys=[...selector.matchAll(/\[data-([\w-]+)\]/g)].map(([,key])=>key.replace(/-([a-z])/g,(_,c)=>c.toUpperCase()));return this.children.filter(el=>keys.some(key=>Object.hasOwn(el.dataset,key)))}});
+  const control=selector=>{if(!controls.has(selector))controls.set(selector,makeControl());return controls.get(selector)};
   function modal(html){
     const elements={};
     for(const match of html.matchAll(/<(input|select|textarea)\b([^>]*)(?:>([\s\S]*?)<\/\1>)?/g)){
@@ -31,15 +35,16 @@ function editor(state){
       if(id)controls.set('#'+id,control);
     }
     form={elements,addEventListener(){},querySelector(){return {textContent:''}}};
+    control('#catalog-shortcuts').innerHTML=html.match(/id="catalog-shortcuts"[^>]*>([\s\S]*?)<\/div>/)?.[1]||'';
   }
   const context=vm.createContext({
-    state,plants,methods,addDays,defaultBatch,plantKinds,isFlower,expectations,structuredClone,seedCategories,cropName,catalogCrops,findSeeds,
+    state,plants,methods,addDays,defaultBatch,plantKinds,isFlower,expectations,structuredClone,seedCategories,seedCategory,cropName,catalogCrops,findSeeds,varietyPage,
     modal,dialogHead:()=>'',growingGuide:()=>'',esc:String,
-    $:selector=>{if(selector==='#plant-form')return form;if(!controls.has(selector))controls.set(selector,{close(){}});return controls.get(selector)},
+    $:selector=>selector==='#plant-form'?form:control(selector),
     FormData:class{constructor(f){this.entries=Object.entries(f.elements).map(([key,input])=>[key,input.value])}[Symbol.iterator](){return this.entries[Symbol.iterator]()}},
     save(){},render(){},toast:value=>{message=value},today:()=> '2026-11-09',
   });
-  vm.runInContext(optionsSource+editorSource,context);
+  vm.runInContext(editorSource,context);
   return {open:(id,seed)=>context.edit(id,seed),control:selector=>controls.get(selector),get form(){return form},get message(){return message}};
 }
 
@@ -50,8 +55,8 @@ for(const existing of [false,true])test(`changing lettuce preserves an entered s
   ui.open(existing?seed.id:undefined,existing?undefined:seed);
   ui.form.elements.sow.value='2026-11-01';
   ui.form.elements.sow.onchange();
-  ui.form.elements.plant.value='bibb';
-  ui.form.elements.plant.onchange({target:ui.form.elements.plant});
+  const search=ui.control('#catalog-search');search.value='bibb';search.oninput({target:search});
+  ui.control('#catalog-results').children.find(el=>el.dataset.seedChoice==='bibb').onclick();
   assert.equal(ui.form.elements.sow.value,'2026-11-01');
   assert.equal(ui.form.elements.method.value,'growstand');
   ui.form.onsubmit({preventDefault(){}});
@@ -85,22 +90,104 @@ test('switching a Burpee vegetable between indoor and direct sowing updates its 
 test('picker narrows a full catalog without changing planting fields and can clear its filters',()=>{
   const state={settings,batches:[]},ui=editor(state);
   ui.open();
-  assert.ok((ui.form.elements.plant.innerHTML.match(/<option\b/g)||[]).length<=61);
+  assert.equal(ui.control('#catalog-results').children.length,6);
   ui.form.elements.quantity.value='12';
   const change=(selector,value,event='onchange')=>{const control=ui.control(selector);control.value=value;control[event]({target:control})};
   change('#catalog-category','Herb');change('#catalog-crop','Basil');
-  assert.equal(ui.control('#catalog-count').textContent,'18 matching choices');
+  assert.equal(ui.control('#catalog-count').textContent,'Showing 1–6 of 18 matching varieties');
   assert.equal(ui.form.elements.variety.value,'Sungold Hybrid');
   assert.equal(ui.form.elements.quantity.value,'12');
   change('#catalog-search','sun gold tomatoes','oninput');
   assert.equal(ui.control('#catalog-category').value,'');assert.equal(ui.control('#catalog-crop').value,'');
-  assert.equal(ui.control('#catalog-count').textContent,'1 matching choice');
-  assert.match(ui.form.elements.plant.innerHTML,/Sungold Hybrid/);
+  assert.equal(ui.control('#catalog-count').textContent,'Showing 1–1 of 1 matching variety');
+  assert.match(ui.control('#catalog-results').innerHTML,/Sungold Hybrid/);
   change('#catalog-search','no-such-variety-12345','oninput');
   assert.match(ui.control('#catalog-count').textContent,/No matching varieties/);
-  assert.match(ui.form.elements.plant.innerHTML,/Current selection/);
+  assert.equal(ui.form.elements.plant.value,'');
+  assert.equal(ui.control('#catalog-prev').disabled,true);assert.equal(ui.control('#catalog-next').disabled,true);
   ui.control('#catalog-clear').onclick();
   assert.equal(ui.control('#catalog-search').value,'');
-  assert.match(ui.control('#catalog-count').textContent,/Showing the first 60/);
+  assert.match(ui.control('#catalog-count').textContent,/Choose a plant type/);
+  assert.equal(ui.control('#catalog-results').hidden,true);
   assert.equal(state.batches.length,0);
+});
+
+test('every variety is reachable by paging and browsing preserves entered fields',()=>{
+  const ui=editor({settings,batches:[]});ui.open();
+  ui.form.elements.quantity.value='12';
+  assert.equal(ui.control('#catalog-results').hidden,true);
+  ui.control('#catalog-all').onclick();
+  assert.equal(ui.control('#catalog-results').hidden,false);
+  const found=new Set();
+  const total=Object.keys(plants).length;
+  for(let i=0;i<=Math.ceil(total/6);i++){
+    for(const button of ui.control('#catalog-results').children)found.add(button.dataset.seedChoice);
+    if(ui.control('#catalog-next').disabled)break;
+    ui.control('#catalog-next').onclick();
+  }
+  assert.equal(found.size,Object.keys(plants).length);
+  assert.ok(found.has('zinnia'),'Varieties beyond the old cap remain reachable');
+  assert.equal(ui.form.elements.quantity.value,'12');
+  assert.equal(ui.form.elements.plant.value,'');
+  assert.equal(ui.control('#catalog-next').disabled,true);
+  ui.control('#catalog-prev').onclick();assert.equal(ui.control('#catalog-next').disabled,false);
+  const search=ui.control('#catalog-search');search.value='sungold';search.oninput({target:search});
+  assert.equal(ui.control('#catalog-page').textContent,'Page 1 of 1');
+});
+test('quick crop buttons filter results and choosing a result saves that variety',()=>{
+  const state={settings,batches:[]},ui=editor(state);ui.open();
+  ui.control('#catalog-shortcuts').children.find(el=>el.dataset.quickCrop==='Basil').onclick();
+  assert.equal(ui.control('#catalog-crop').value,'Basil');
+  const result=ui.control('#catalog-results').children.find(el=>el.dataset.seedChoice==='burpee-basil-batik-prod600093');
+  assert.ok(result);result.onclick();
+  assert.equal(ui.form.elements.plant.value,'burpee-basil-batik-prod600093');
+  assert.equal(ui.form.elements.variety.value,'Batik');
+  ui.form.onsubmit({preventDefault(){}});
+  assert.equal(state.batches.length,1);assert.equal(state.batches[0].variety,'Batik');
+});
+
+test('Pepper and Echinacea shortcuts include built-in presets with sibling crop names',()=>{
+  const presets={Pepper:['sweetPepper','bellPepper'],Echinacea:['coneflower','powwowWildBerry','rainbowSherbet','sweetSandia']};
+  for(const [shortcut,expected] of Object.entries(presets)){
+    const ui=editor({settings,batches:[]});ui.open();
+    ui.control('#catalog-shortcuts').children.find(el=>el.dataset.quickQuery===shortcut).onclick();
+    assert.equal(ui.control('#catalog-search').value,shortcut);
+    assert.equal(ui.control('#catalog-crop').value,'');
+    const found=new Set();
+    for(;;){
+      for(const button of ui.control('#catalog-results').children)found.add(button.dataset.seedChoice);
+      if(ui.control('#catalog-next').disabled)break;
+      ui.control('#catalog-next').onclick();
+    }
+    for(const key of expected)assert.ok(found.has(key),`${shortcut} shortcut includes ${key}`);
+  }
+});
+
+
+test('search Enter focuses visible matches without saving an implicit variety',()=>{
+  const state={settings,batches:[],rotations:[]},ui=editor(state);ui.open();
+  assert.equal(ui.form.elements.plant.value,'');
+  assert.equal(ui.control('#save-planting').disabled,true);
+  const search=ui.control('#catalog-search');search.value='watermelon';search.oninput({target:search});
+  let prevented=false;search.onkeydown({key:'Enter',preventDefault(){prevented=true}});
+  assert.equal(prevented,true);
+  assert.equal(ui.control('#catalog-results').children[0].focused,true);
+  ui.form.onsubmit({preventDefault(){}});assert.equal(state.batches.length,0);
+  const choice=ui.control('#catalog-results').children.find(el=>plants[el.dataset.seedChoice].name==='Watermelon');choice.onclick();
+  assert.match(ui.form.elements.name.value,/watermelon/i);
+  assert.equal(ui.control('#save-planting').disabled,false);
+  ui.form.onsubmit({preventDefault(){}});assert.equal(state.batches.length,1);
+  assert.match(state.batches[0].name,/watermelon/i);
+});
+
+test('explicitly choosing Sungold works and a new search requires a new choice or keep',()=>{
+  const state={settings,batches:[],rotations:[]},ui=editor(state);ui.open();
+  let search=ui.control('#catalog-search');search.value='sungold';search.oninput({target:search});
+  ui.control('#catalog-results').children[0].onclick();
+  assert.equal(ui.form.elements.plant.value,'tomato');
+  search=ui.control('#catalog-search');search.value='watermelon';search.oninput({target:search});
+  assert.equal(ui.control('#save-planting').disabled,true);
+  ui.form.onsubmit({preventDefault(){}});assert.equal(state.batches.length,0);
+  ui.control('#catalog-keep').onclick();assert.equal(ui.control('#save-planting').disabled,false);
+  ui.form.onsubmit({preventDefault(){}});assert.equal(state.batches[0].plant,'tomato');
 });

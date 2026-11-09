@@ -6,7 +6,9 @@ The November 9, 2026 snapshot covers Burpee’s public seed-only listing and the
 
 In **Add planting**, choose a **Seed category**, then a **Plant type**, then a variety. For example, choose **Vegetables → Tomato**. Alternatively, search across all categories: **sungold**, **sun gold**, and **sun gold tomatoes** find the same existing Sungold preset.
 
-The picker displays a match count and at most 60 matching choices, grouped by plant type. Narrow a broad result using the filters or search. Searching clears category and plant-type filters; choosing a category or plant type clears the previous search. **Clear filters** restores all choices. Browsing does not replace the current planting: it remains selected until another variety is chosen.
+Search results appear as selectable cards directly below the filters, with six choices per page and **Previous** / **Next** controls to reach every match. Plant-type shortcuts and **Browse all varieties** also open the cards. Searching clears category and plant-type filters; choosing a category or plant type clears the previous search. **Clear filters** resets browsing.
+
+New plantings start with **No variety selected**. Click a matching card to select it and reveal the planting details, then use **Add to my garden** to save. Enter in the search field focuses the first matching card without submitting the form. If you search again after selecting a variety or while editing a planting, choose a result or explicitly **Keep current variety** before saving.
 
 Open **Burpee growing details** to see available product facts, including sun, lifecycle, sowing method, mature size, vegetable subtype, maturity days, growing zones, and bloom season. The reference date and product link are included. Facts absent from Burpee’s page remain absent.
 
