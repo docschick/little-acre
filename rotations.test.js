@@ -43,6 +43,22 @@ test('seeds and harvest timing can differ between sowings',()=>{
   const b=recordPlanting(s,'rotation-1','2026-11-16',input({plant:'custom',variety:'My baby-leaf mix',sow:'2026-11-16',days:28,daysMax:35,basis:'sow'}));
   const ready=schedule(b).find(t=>t.key==='ready');assert.equal(ready.date,'2026-12-14');assert.equal(ready.endDate,'2026-12-21');assert.equal(b.variety,'My baby-leaf mix');
 });
+test('Burpee Buttercrunch works in rotations, harvest reminders, and restored backups',()=>{
+  const s=state(plan({plant:'buttercrunch'}));
+  assert.equal(validRotation(s.rotations[0]),true);
+  const preset=defaultBatch('buttercrunch',settings,'growstand','2026-11-09');
+  assert.equal(preset.variety,'Buttercrunch');assert.equal(preset.days,65);assert.equal(preset.basis,'trueLeaves');
+  const b=recordPlanting(s,'rotation-1','2026-11-09',input({plant:preset.plant,variety:preset.variety,days:preset.days,basis:preset.basis}));
+  assert.equal(schedule(b).find(t=>t.key==='ready').date,'2027-01-27');
+  b.actual.trueLeaves='2026-11-25';
+  assert.equal(schedule(b).find(t=>t.key==='ready').date,'2027-01-29');
+  s.rotations[0].paused=true;
+  assert.deepEqual(indoorReminders(s,'2027-01-28'),[]);
+  assert.equal(indoorReminders(s,'2027-01-29')[0].type,'harvest');
+  const restored=JSON.parse(JSON.stringify(s));
+  assert.equal(validBackup(restored),true);
+  assert.equal(restored.batches[0].plant,'buttercrunch');
+});
 test('indoor harvests use sowing dates in November rather than the outdoor frost date',()=>{
   const b=defaultBatch('lettuce',settings,'growstand','2026-11-09');assert.equal(b.sow,'2026-11-09');
   assert.equal(schedule(b).some(t=>['harden','transplant'].includes(t.key)),false);
