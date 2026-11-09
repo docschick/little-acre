@@ -12,6 +12,15 @@ test('purchased herbs count maturity from transplant, not an invented seed start
 
 import {plants,isFlower,expectations} from './planner.js';
 import {validBackup} from './backup.js';
+test('Burpee vegetables with indoor starts count from transplant unless direct-sown',()=>{
+  const key=Object.keys(plants).find(key=>key.startsWith('burpee-')&&plants[key].seedCategory==='Vegetable'&&plants[key].days>0&&/Indoor/i.test(plants[key].burpeeAttributes?.['Sow Method']||'')&&/Outdoor/i.test(plants[key].burpeeAttributes?.['Sow Method']||''));
+  assert.ok(key,'Catalog includes a Burpee vegetable with indoor and outdoor sowing methods');
+  const indoor=defaultBatch(key,settings,'indoor'),direct=defaultBatch(key,settings,'direct');
+  assert.equal(indoor.basis,'transplant');
+  assert.equal(schedule(indoor).find(task=>task.key==='ready').date,addDays(indoor.transplant,indoor.days));
+  assert.equal(direct.basis,'trueLeaves');
+  assert.deepEqual(schedule(direct).map(task=>task.key),['sow','trueLeaves','ready']);
+});
 test('all 26 requested types are available, including existing Sungold and Simpson presets',()=>{
   const requested=['bibb','lettuce','fourSeasons','dynamite','tomato','verandaRed','superSweet100','twoTasty','blueberryPie','everlastingRevolution','miniMe','fantasia','dasanteBlue','largeLeafBasil','powwowWildBerry','blackCherry','amishPaste','fignomenal','redLark','rainbowSherbet','sweetSandia','galaxy','hosta','sweetPepper','bellPepper','toadLily'];
   assert.equal(requested.length,26);

@@ -68,6 +68,20 @@ for(const existing of [false,true])test(`changing lettuce preserves an entered s
   assert.match(ui.message,/Planting (added|updated)/);
 });
 
+test('switching a Burpee vegetable between indoor and direct sowing updates its maturity basis',()=>{
+  const key=Object.keys(plants).find(key=>key.startsWith('burpee-')&&plants[key].seedCategory==='Vegetable'&&plants[key].days>0&&/Indoor/i.test(plants[key].burpeeAttributes?.['Sow Method']||'')&&/Outdoor/i.test(plants[key].burpeeAttributes?.['Sow Method']||''));
+  assert.ok(key,'Catalog includes a Burpee vegetable with indoor and outdoor sowing methods');
+  const ui=editor({settings,batches:[]});
+  ui.open(undefined,defaultBatch(key,settings,'indoor'));
+  assert.equal(ui.form.elements.basis.value,'transplant');
+  ui.form.elements.method.value='direct';
+  ui.form.elements.method.onchange();
+  assert.equal(ui.form.elements.basis.value,'trueLeaves');
+  ui.form.elements.method.value='indoor';
+  ui.form.elements.method.onchange();
+  assert.equal(ui.form.elements.basis.value,'transplant');
+});
+
 test('picker narrows a full catalog without changing planting fields and can clear its filters',()=>{
   const state={settings,batches:[]},ui=editor(state);
   ui.open();

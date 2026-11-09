@@ -58,7 +58,7 @@ export function expandBurpeeSeeds(legacy){
     const days=!flower&&match?Number(match[1]):0;
     const profile=(names.name==='Pepper'?legacy.sweetPepper:null)||Object.values(legacy).find(p=>normalize(p.name)===normalize(names.name)&&p.defaultMethod!=='nursery');
     const weeks=profile?.weeks??(defaultMethod==='indoor'?6:4),offset=profile?.offset??(defaultMethod==='indoor'?14:0);
-    const basis=vegetableSeed?(direct?'trueLeaves':'transplant'):'sow';
+    const basis=vegetableSeed?(/Indoor/i.test(methods)?'transplant':direct?'trueLeaves':'transplant'):'sow';
     const notes=[methods?`Burpee sowing method: ${methods.toLowerCase()}.`:'Sowing method is not listed; use the seed packet.',
       !profile?'Initial sowing and planting-out dates are editable planning placeholders around your frost date, not cultivar-specific packet instructions.':'Adjust planting dates to your packet and growing conditions.',
       basis==='trueLeaves'&&days?'Burpee’s direct-sown vegetable maturity counts from several true leaves; the editable 14-day allowance is an estimate.':'',

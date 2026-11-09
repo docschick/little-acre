@@ -119,7 +119,7 @@ function edit(id,seed){
     f.elements.method.onchange=()=>{
       capture();const p=plants[b.plant];
       if(b.method==='growstand'){b.sow=today();b.transplant=b.sow;b.basis=p.basis==='transplant'?'sow':p.basis}
-      else if(b.method==='direct'){b.sow=b.transplant;b.basis=p.basis==='trueLeaves'?'trueLeaves':'sow'}
+      else if(b.method==='direct'){b.sow=b.transplant;b.basis=(p.basis==='trueLeaves'||(p.burpeeAttributes&&p.seedCategory==='Vegetable'))?'trueLeaves':'sow'}
       else if(b.method==='nursery'){b.basis='transplant'}
       else if(b.method==='outdoor'){b.sow=addDays(state.settings.frost,p.offset);b.transplant=addDays(b.sow,p.weeks*7);b.basis=p.basis}
       else {b.sow=addDays(b.transplant,-p.weeks*7);b.harden=addDays(b.transplant,-10);b.basis=p.basis}
