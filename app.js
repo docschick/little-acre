@@ -1,3 +1,4 @@
+import {seedCategories,cropName,catalogCrops,findSeeds} from './seed-picker.js';
 import {setupGrowStand,growStandMarkup,bindGrowStand,indoorReminderMarkup} from './growstand.js';
 import {rotationSlots,leaveOutdoorDemo} from './rotations.js';
 import {validBackup} from './backup.js';
@@ -51,26 +52,30 @@ function growstand(){shell(growStandMarkup())}
 function render(){({overview,garden,calendar,settings,growstand,tasklist})[page]()}
 function modal(html){$('#modal').innerHTML=html;if(!$('#modal').open)$('#modal').showModal();$('#modal').querySelectorAll('[data-close]').forEach(el=>el.onclick=()=>$('#modal').close())}
 function dialogHead(title){return `<div class="dialog-head"><h2>${title}</h2><button class="close" data-close aria-label="Close dialog">×</button></div>`}
-function plantOptions(selected,query=''){
-  return plantKinds.map(kind=>{
-    const entries=Object.entries(plants).filter(([key,p])=>p.kind===kind&&(key===selected||`${p.name} ${p.variety}`.toLowerCase().includes(query.toLowerCase())));
-    return entries.length?`<optgroup label="${kind}">${entries.map(([key,p])=>`<option value="${key}" ${selected===key?'selected':''}>${esc(p.name)}${p.variety?' — '+esc(p.variety):''}</option>`).join('')}</optgroup>`:'';
-  }).join('');
+function plantOptions(selected,query='',category='',crop=''){
+  const matches=findSeeds(plants,{category,crop,query}),visible=matches.slice(0,60),groups=new Map();
+  for(const [key,p] of visible){const name=cropName(p);if(!groups.has(name))groups.set(name,[]);groups.get(name).push([key,p])}
+  const option=([key,p])=>`<option value="${esc(key)}" ${selected===key?'selected':''}>${esc(p.name)} · ${esc(p.variety||'Your own variety')}</option>`;
+  const current=!visible.some(([key])=>key===selected)&&plants[selected]?`<optgroup label="Current selection">${option([selected,plants[selected]])}</optgroup>`:'';
+  return current+[...groups].map(([name,entries])=>`<optgroup label="${esc(name)}">${entries.map(option).join('')}</optgroup>`).join('');
 }
 function growingGuide(b){
-  const preset=plants[b.plant];
-  return `<aside class="growing-guide"><div class="eyebrow">${isFlower(b)?'BLOOM EXPECTATIONS':'HARVEST EXPECTATIONS'}</div><p class="guide-summary">${esc(expectations(b))}</p>${b.season&&b.days>0?`<p class="small">Season · ${esc(b.season)}</p>`:''}<p class="small">${b.days>0?'A planning estimate; check plant readiness and your seed packet.':'Seasonal guide for established plants. First-year timing can differ.'}</p><div class="guide-sources">${(preset.sources||[]).map((url,i)=>`<a href="${esc(url)}" target="_blank" rel="noopener">${i===0?'Growing reference':'More guidance'} ↗</a>`).join(' · ')}</div></aside>`;
+  const preset=plants[b.plant],facts=preset.burpeeAttributes||{};
+  return `<aside class="growing-guide"><div class="eyebrow">${isFlower(b)?'BLOOM EXPECTATIONS':'HARVEST EXPECTATIONS'}</div><p class="guide-summary">${esc(expectations(b))}</p>${b.season&&b.days>0?`<p class="small">Season · ${esc(b.season)}</p>`:''}<p class="small">${b.days>0?'A planning estimate; check plant readiness and your seed packet.':isFlower(b)?preset.lifecycle==='Annual'?'Bloom season varies with sowing date and growing conditions.':'Seasonal guide for established plants. First-year timing can differ.':'No maturity countdown is set. Add the days from your seed packet when available.'}</p>${Object.keys(facts).length?`<details class="seed-facts"><summary>Burpee growing details · ${esc(preset.seedCategory)}</summary><dl>${Object.entries(facts).map(([label,value])=>`<div><dt>${esc(label==='Variety'?'Subtype (Burpee)':label)}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl><p class="small">Reference checked ${esc(preset.referenceDate)}. Your planting’s editable dates and maturity estimate are shown above.</p></details>`:''}<div class="guide-sources">${(preset.sources||[]).map((url,i)=>`<a href="${esc(url)}" target="_blank" rel="noopener">${i===0?'Growing reference':'More guidance'} ↗</a>`).join(' · ')}</div></aside>`;
 }
 function edit(id,seed){
   const existing=state.batches.find(b=>b.id===id);
   let b=existing?structuredClone(existing):seed?structuredClone(seed):defaultBatch('tomato',state.settings);
+  let pickerCategory='',pickerCrop='',pickerQuery='';
   function form(){
     const allowed=plants[b.plant].allowedMethods||Object.keys(methods);
     const trueLeafDate=b.trueLeaves||addDays(b.actual?.sow||b.sow,14);
     modal(`${dialogHead(existing?'Edit planting':'Plant something wonderful.')}<form id="plant-form">
       <div class="form-grid">
-        <label class="full">Find a plant or variety<input type="search" id="catalog-search" placeholder="Try delphinium, Sungold, or lettuce" autocomplete="off"></label>
-        <label class="full">Start with a plant<select name="plant">${plantOptions(b.plant)}</select><span class="small">${Object.keys(plants).length} presets · choose a variety, then adjust it for your garden</span></label>
+        <div class="full catalog-filters"><label>Seed category<select id="catalog-category"><option value="">All categories</option>${seedCategories.map(c=>`<option value="${esc(c)}">${esc(c==='Vegetable'?'Vegetables':c==='Herb'?'Herbs':c==='Annual flower'?'Annual flowers':c==='Perennial flower'?'Perennial flowers':c)}</option>`).join('')}</select></label><label>Plant type<select id="catalog-crop"><option value="">All plant types</option></select></label></div>
+        <label class="full">Search all seeds and plants<input type="search" id="catalog-search" value="${esc(pickerQuery)}" placeholder="Try Sungold, sun gold tomato, or basil" autocomplete="off"></label>
+        <div class="full catalog-status"><span id="catalog-count" class="small" role="status"></span><button type="button" class="text-button" id="catalog-clear">Clear filters</button></div>
+        <label class="full">Choose a variety<select name="plant">${plantOptions(b.plant,pickerQuery,pickerCategory,pickerCrop)}</select><span class="small">Your planting stays unchanged until you choose a different variety.</span></label>
         <div class="full">${growingGuide(b)}</div>
         <label>Plant name<input name="name" required maxlength="100" value="${esc(b.name)}"></label>
         <label>Variety<input name="variety" maxlength="100" value="${esc(b.variety)}"></label>
@@ -94,14 +99,27 @@ function edit(id,seed){
     const f=$('#plant-form');
     const capture=()=>Object.assign(b,Object.fromEntries(new FormData(f)));
     f.addEventListener('input',e=>{if(['days','daysMax','season'].includes(e.target.name)){capture();f.querySelector('.guide-summary').textContent=expectations(b)}});
-    $('#catalog-search').oninput=e=>{f.elements.plant.innerHTML=plantOptions(b.plant,e.target.value)};
+    const updatePicker=()=>{
+      $('#catalog-category').value=pickerCategory;
+      $('#catalog-crop').innerHTML='<option value="">All plant types</option>'+catalogCrops(plants,pickerCategory).map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
+      $('#catalog-crop').value=pickerCrop;
+      $('#catalog-search').value=pickerQuery;
+      f.elements.plant.innerHTML=plantOptions(b.plant,pickerQuery,pickerCategory,pickerCrop);
+      const count=findSeeds(plants,{category:pickerCategory,crop:pickerCrop,query:pickerQuery}).length;
+      $('#catalog-count').textContent=count?`${count} matching choice${count===1?'':'s'}${count>60?' · Showing the first 60. Choose a category or plant type, or search to narrow the list.':''}`:'No matching varieties. Try another name or clear the filters.';
+    };
+    $('#catalog-search').oninput=e=>{pickerQuery=e.target.value;pickerCategory='';pickerCrop='';updatePicker()};
+    $('#catalog-category').onchange=e=>{pickerCategory=e.target.value;pickerCrop='';pickerQuery='';updatePicker()};
+    $('#catalog-crop').onchange=e=>{pickerCrop=e.target.value;pickerQuery='';updatePicker()};
+    $('#catalog-clear').onclick=()=>{pickerCategory='';pickerCrop='';pickerQuery='';updatePicker()};
+    updatePicker();
     f.elements.plant.onchange=e=>{capture();const keep=b.method==='growstand'?{method:'growstand'}:{};const nb=defaultBatch(e.target.value,state.settings,keep.method,b.method==='growstand'?b.sow:undefined);b={...nb,id:b.id,actual:b.actual,harvests:b.harvests,...(b.rotationId?{rotationId:b.rotationId,rotationDate:b.rotationDate}:{})};form()};
     f.elements.kind.onchange=()=>{capture();form()};
     f.elements.basis.onchange=()=>{capture();form()};
     f.elements.method.onchange=()=>{
       capture();const p=plants[b.plant];
       if(b.method==='growstand'){b.sow=today();b.transplant=b.sow;b.basis=p.basis==='transplant'?'sow':p.basis}
-      else if(b.method==='direct'){b.sow=b.transplant;b.basis=p.basis==='trueLeaves'?'trueLeaves':'sow'}
+      else if(b.method==='direct'){b.sow=b.transplant;b.basis=(p.basis==='trueLeaves'||(p.burpeeAttributes&&p.seedCategory==='Vegetable'))?'trueLeaves':'sow'}
       else if(b.method==='nursery'){b.basis='transplant'}
       else if(b.method==='outdoor'){b.sow=addDays(state.settings.frost,p.offset);b.transplant=addDays(b.sow,p.weeks*7);b.basis=p.basis}
       else {b.sow=addDays(b.transplant,-p.weeks*7);b.harden=addDays(b.transplant,-10);b.basis=p.basis}

@@ -1,5 +1,5 @@
 import {addDays,defaultBatch,schedule,plants} from './planner.js';
-export const lettuceKeys=['bibb','buttercrunch','lettuce','fourSeasons','dynamite','custom'];
+export const lettuceKeys=[...Object.entries(plants).filter(([,p])=>p.name==='Lettuce'||p.crop==='Lettuce').map(([key])=>key),'custom'];
 export const cadences={weekly:'Every week',fortnightly:'Every 2 weeks',twiceMonthly:'Twice a month'};
 export function localToday(){return new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}
 export function isDate(s){return typeof s==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s)&&!Number.isNaN(Date.parse(s))&&new Date(s+'T12:00:00Z').toISOString().slice(0,10)===s}

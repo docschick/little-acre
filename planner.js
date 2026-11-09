@@ -24,7 +24,7 @@ export function defaultBatch(key,settings,method,startDate){
   let transplant=addDays(settings.frost,p.offset),sow=['direct','outdoor'].includes(method)?transplant:addDays(transplant,-p.weeks*7);
   if(method==='outdoor')transplant=addDays(sow,p.weeks*7);
   if(method==='growstand'){sow=startDate||new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());transplant=sow}
-  const basis=method==='nursery'?'transplant':['direct','growstand'].includes(method)&&p.basis==='transplant'?'sow':p.basis;
+  const basis=method==='nursery'?'transplant':method==='direct'&&p.burpeeAttributes&&p.seedCategory==='Vegetable'?'trueLeaves':['direct','growstand'].includes(method)&&p.basis==='transplant'?'sow':p.basis;
   return {id:crypto.randomUUID(),plant:key,...p,method,basis,sow,transplant,harden:addDays(transplant,-10),location:'',quantity:method==='nursery'?1:6,actual:{},notes:'',harvests:[]};
 }
 export function expectations(b){
