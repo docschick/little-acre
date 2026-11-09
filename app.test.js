@@ -16,7 +16,7 @@ function editor(state){
   const makeControl=()=>({html:'',children:[],close(){},focus(){this.focused=true},set innerHTML(html){
     this.html=html;
     this.children=[...html.matchAll(/<button\b([^>]*)>/g)].map(([,attrs])=>({focus(){this.focused=true},dataset:Object.fromEntries([...attrs.matchAll(/data-([\w-]+)="([^"]*)"/g)].map(([,key,value])=>[key.replace(/-([a-z])/g,(_,c)=>c.toUpperCase()),value]))}));
-  },get innerHTML(){return this.html},querySelectorAll(selector){const key=selector.match(/\[data-([\w-]+)\]/)[1].replace(/-([a-z])/g,(_,c)=>c.toUpperCase());return this.children.filter(el=>Object.hasOwn(el.dataset,key))}});
+  },get innerHTML(){return this.html},querySelectorAll(selector){const keys=[...selector.matchAll(/\[data-([\w-]+)\]/g)].map(([,key])=>key.replace(/-([a-z])/g,(_,c)=>c.toUpperCase()));return this.children.filter(el=>keys.some(key=>Object.hasOwn(el.dataset,key)))}});
   const control=selector=>{if(!controls.has(selector))controls.set(selector,makeControl());return controls.get(selector)};
   function modal(html){
     const elements={};
@@ -144,6 +144,23 @@ test('quick crop buttons filter results and choosing a result saves that variety
   assert.equal(ui.form.elements.variety.value,'Batik');
   ui.form.onsubmit({preventDefault(){}});
   assert.equal(state.batches.length,1);assert.equal(state.batches[0].variety,'Batik');
+});
+
+test('Pepper and Echinacea shortcuts include built-in presets with sibling crop names',()=>{
+  const presets={Pepper:['sweetPepper','bellPepper'],Echinacea:['coneflower','powwowWildBerry','rainbowSherbet','sweetSandia']};
+  for(const [shortcut,expected] of Object.entries(presets)){
+    const ui=editor({settings,batches:[]});ui.open();
+    ui.control('#catalog-shortcuts').children.find(el=>el.dataset.quickQuery===shortcut).onclick();
+    assert.equal(ui.control('#catalog-search').value,shortcut);
+    assert.equal(ui.control('#catalog-crop').value,'');
+    const found=new Set();
+    for(;;){
+      for(const button of ui.control('#catalog-results').children)found.add(button.dataset.seedChoice);
+      if(ui.control('#catalog-next').disabled)break;
+      ui.control('#catalog-next').onclick();
+    }
+    for(const key of expected)assert.ok(found.has(key),`${shortcut} shortcut includes ${key}`);
+  }
 });
 
 
