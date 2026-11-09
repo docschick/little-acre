@@ -23,7 +23,9 @@ Run date calculation checks with `npm test`.
 ## What's here
 
 - Overview with pending / overdue milestones and planting cards
-- Individual planting batches for indoor seed starts, outdoor trays, direct sowing, or purchased transplants
+- Individual planting batches for indoor seed starts, outdoor trays, direct sowing, purchased transplants, or indoor growing through harvest
+- Indoor lettuce rotations with weekly, every-two-weeks, or twice-monthly sowings
+- In-app reminders for due plantings and estimated harvest readiness, with skip / restore and pause / resume controls
 - Editable sowing, hardening, and transplant dates; quantity, variety, garden spot, and field notes
 - 31 searchable plant presets, including all 26 requested vegetables, fruits, herbs, and flowers
 - Variety-specific maturity values, optional harvest ranges, and editable bloom / harvest seasons
@@ -38,6 +40,21 @@ Run date calculation checks with `npm test`.
 - Browser localStorage persistence with JSON backup export / import
 
 The app starts with a clearly labeled sample spring 2027 garden, viewed as of March 15. Choose “Start my own garden” to remove the sample and begin your journal. Dates are estimates, not forecasts. There is no live weather, automatic ZIP lookup, push notification service, or account sync. Changing frost settings affects defaults for new plantings only.
+
+## Indoor lettuce rotations
+
+[![Sample indoor lettuce rotation showing a planting reminder and estimated harvest readiness](docs/screenshots/indoor-grow-stand.jpg)](docs/screenshots/indoor-grow-stand.jpg)
+
+
+1. Open **Grow stand** and choose **Start a rotation**. Set your first date and rhythm; a default seed is optional.
+2. Choose **I’ve planted** for a date when you sow. Enter the seed variety, actual date, quantity, and packet harvest estimate. Each sowing becomes a separate indoor batch with no outdoor hardening-off or transplant tasks.
+3. Choose **Skip this planting** when you have enough lettuce or will be away. That date creates no planting or harvest record. Later dates stay anchored. Restore a date from **Skipped plantings** if needed.
+4. Check the overview or Grow stand page for planting and harvest reminders. Harvest timing is approximate and editable, including for baby-leaf picking. Record actual true leaves to refine estimates that count from that stage.
+5. Log harvests on the batch. Select **Dismiss this batch’s harvest reminder** when you no longer want the reminder; later pickings can still be logged. Alternatively, acknowledge its harvest milestone.
+
+**Weekly** means every 7 days, **every 2 weeks** means every 14 days, and **twice a month** uses two chosen calendar dates (clamped to the last day of a shorter month). The first date is always a slot. Planting late or skipping does not shift later dates. Pause suppresses sowing reminders while preserving pending dates; harvest reminders for planted batches continue. After history is recorded, start another rotation to change the rhythm.
+
+Reminders appear inside Little Acre when it is open, including after a date change. There are no operating-system, email, or Codex notifications. Leaving the outdoor sample preserves indoor batches and rotations. The grow stand uses the actual date in America/New_York, independently of the sample outdoor garden’s preview date. Rotations, skipped dates, and linked batches are included in JSON backups; older backups without rotations still import. Browser storage remains local to the device and browser.
 
 ## Catalog timing
 
