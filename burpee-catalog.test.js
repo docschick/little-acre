@@ -20,6 +20,12 @@ test('every included Burpee seed product has one source-linked preset with its v
     assert.equal(matches[0].referenceDate,burpeeCatalogSummary.checkedOn);
   }
 });
+test('Benary’s Giant Burpee seed updates the original preset instead of creating a duplicate',()=>{
+  const slug='benarys-giant-mix-zinnia-prod600555',url=`https://www.burpee.com/products/${slug}`;
+  assert.ok(plants.zinnia.sources.includes(url));
+  assert.equal(plants.zinnia.variety,'Benary’s Giant');
+  assert.equal(plants[`burpee-${slug}`],undefined);
+});
 test('every catalog preset produces valid schedules and survives a garden backup',()=>{
   const batches=Object.keys(plants).map(key=>defaultBatch(key,settings));
   assert.equal(validBackup({version:1,settings,batches,rotations:[]}),true);

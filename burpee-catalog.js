@@ -42,7 +42,7 @@ export function expandBurpeeSeeds(legacy){
     if(url.startsWith('https://www.burpee.com/products/'))bySlug.set(new URL(url).pathname.split('/').pop(),key);
   }
   // These original generic presets predate product links. Keep their stable IDs.
-  const originalAliases={'basil-genovese-prod000452':'basil','asclepias-tuberosa-butterfly-weed-prod000004':'butterfly'};
+  const originalAliases={'basil-genovese-prod000452':'basil','asclepias-tuberosa-butterfly-weed-prod000004':'butterfly','benarys-giant-mix-zinnia-prod600555':'zinnia'};
   for(const row of burpeeSeedData){
     const names=productNames(row),facts=metadata(row),url=`https://www.burpee.com/products/${row.slug}`;
     const existingKey=bySlug.get(row.slug)||originalAliases[row.slug]||Object.keys(legacy).find(key=>normalize(legacy[key].name+legacy[key].variety)===normalize(names.name+names.variety));
