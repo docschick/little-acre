@@ -53,12 +53,13 @@ export function recordPlanting(state,planId,slotDate,input){
   p.decisions[slotDate]={status:'planted',batchId:b.id};
   return b;
 }
-// Only pending sowings and unacknowledged indoor harvest estimates are reminders.
-// No records are generated merely because a planting date has passed.
+// Pending rotation slots, unrecorded single-batch steps, and unacknowledged
+// indoor harvest estimates are reminders. No records are generated automatically.
 export function indoorReminders(state,date){
   const sowings=(state.rotations||[]).filter(p=>!p.paused).flatMap(p=>rotationSlots(p,date).filter(s=>s.status==='pending').map(s=>({type:'plant',date:s.date,plan:p})));
+  const steps=state.batches.filter(b=>b.method==='growstand'&&!b.rotationId).flatMap(b=>schedule(b).filter(t=>!t.done&&['sow','trueLeaves'].includes(t.key)&&t.date<=date&&(t.key!=='trueLeaves'||b.actual?.sow)).map(t=>({type:'step',step:t.key,date:t.date,batch:b})));
   const harvests=state.batches.filter(b=>b.method==='growstand'&&b.actual?.sow&&!b.actual?.ready).flatMap(b=>{const t=schedule(b).find(t=>t.key==='ready');return t&&t.date<=date?[{type:'harvest',date:t.date,batch:b,endDate:t.endDate}]:[]});
-  return [...sowings,...harvests].sort((a,b)=>a.date.localeCompare(b.date));
+  return [...sowings,...steps,...harvests].sort((a,b)=>a.date.localeCompare(b.date));
 }
 
 // Leaving the outdoor demo must not erase real indoor sowings or rotations.

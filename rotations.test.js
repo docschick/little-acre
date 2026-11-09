@@ -48,6 +48,15 @@ test('indoor harvests use sowing dates in November rather than the outdoor frost
   assert.equal(schedule(b).some(t=>['harden','transplant'].includes(t.key)),false);
   assert.equal(schedule(b).find(t=>t.key==='ready').date,'2027-01-07');
 });
+test('single indoor batches get sowing, true-leaf, and harvest reminders',()=>{
+  const b=defaultBatch('lettuce',settings,'growstand','2026-11-09'),s={settings,rotations:[],batches:[b]};
+  assert.deepEqual(indoorReminders(s,'2026-11-09').map(r=>[r.type,r.step]),[['step','sow']]);
+  b.actual.sow='2026-11-09';assert.deepEqual(indoorReminders(s,'2026-11-22'),[]);
+  assert.deepEqual(indoorReminders(s,'2026-11-23').map(r=>[r.type,r.step]),[['step','trueLeaves']]);
+  b.actual.trueLeaves='2026-11-23';assert.deepEqual(indoorReminders(s,'2027-01-06'),[]);
+  assert.deepEqual(indoorReminders(s,'2027-01-07').map(r=>r.type),['harvest']);
+  b.actual.ready='2027-01-07';assert.deepEqual(indoorReminders(s,'2027-01-07'),[]);
+});
 test('harvest reminders start at the estimate and stop only when acknowledged',()=>{
   const s=state();const b=recordPlanting(s,'rotation-1','2026-11-09',input({basis:'sow',days:28}));
   s.rotations[0].paused=true;
