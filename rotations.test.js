@@ -64,6 +64,17 @@ test('harvest reminders start at the estimate and stop only when acknowledged',(
   b.harvests.push({date:'2026-12-07',amount:'1',unit:'handfuls',note:''});assert.equal(indoorReminders(s,'2026-12-08').length,1);
   b.actual.ready='2026-12-08';assert.deepEqual(indoorReminders(s,'2026-12-08'),[]);
 });
+test('acknowledging readiness clears earlier reminders without inventing milestone dates',()=>{
+  const b=defaultBatch('lettuce',settings,'growstand','2026-11-09'),s={settings,rotations:[],batches:[b]};
+  b.actual.sow='2026-11-09';
+  b.harvests.push({date:'2027-01-07',amount:'1',unit:'handfuls',note:''});
+  assert.deepEqual(indoorReminders(s,'2027-01-07').map(r=>r.type),['step','harvest']);
+  b.actual.ready='2027-01-07';
+  assert.deepEqual(indoorReminders(s,'2027-01-07'),[]);
+  assert.equal(b.actual.trueLeaves,undefined);
+  delete b.actual.ready;
+  assert.deepEqual(indoorReminders(s,'2027-01-07').map(r=>r.type),['step','harvest']);
+});
 test('pause suppresses sowing reminders, keeps harvest checks, and preserves slots for resume',()=>{
   const p=plan({paused:true});assert.deepEqual(indoorReminders(state(p),'2026-11-30'),[]);assert.equal(nextPlanting(p,'2026-11-30'),null);
   p.paused=false;assert.equal(indoorReminders(state(p),'2026-11-30').length,4);

@@ -85,7 +85,7 @@ function edit(id,seed){
     const capture=()=>Object.assign(b,Object.fromEntries(new FormData(f)));
     f.addEventListener('input',e=>{if(['days','daysMax','season'].includes(e.target.name)){capture();f.querySelector('.guide-summary').textContent=expectations(b)}});
     $('#catalog-search').oninput=e=>{f.elements.plant.innerHTML=plantOptions(b.plant,e.target.value)};
-    f.elements.plant.onchange=e=>{const keep=b.method==='growstand'?{method:'growstand'}:{};const nb=defaultBatch(e.target.value,state.settings,keep.method,b.method==='growstand'?b.sow:undefined);b={...nb,id:b.id,actual:b.actual,harvests:b.harvests,...(b.rotationId?{rotationId:b.rotationId,rotationDate:b.rotationDate}:{})};form()};
+    f.elements.plant.onchange=e=>{capture();const keep=b.method==='growstand'?{method:'growstand'}:{};const nb=defaultBatch(e.target.value,state.settings,keep.method,b.method==='growstand'?b.sow:undefined);b={...nb,id:b.id,actual:b.actual,harvests:b.harvests,...(b.rotationId?{rotationId:b.rotationId,rotationDate:b.rotationDate}:{})};form()};
     f.elements.kind.onchange=()=>{capture();form()};
     f.elements.basis.onchange=()=>{capture();form()};
     f.elements.method.onchange=()=>{

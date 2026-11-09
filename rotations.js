@@ -57,7 +57,7 @@ export function recordPlanting(state,planId,slotDate,input){
 // indoor harvest estimates are reminders. No records are generated automatically.
 export function indoorReminders(state,date){
   const sowings=(state.rotations||[]).filter(p=>!p.paused).flatMap(p=>rotationSlots(p,date).filter(s=>s.status==='pending').map(s=>({type:'plant',date:s.date,plan:p})));
-  const steps=state.batches.filter(b=>b.method==='growstand'&&!b.rotationId).flatMap(b=>schedule(b).filter(t=>!t.done&&['sow','trueLeaves'].includes(t.key)&&t.date<=date&&(t.key!=='trueLeaves'||b.actual?.sow)).map(t=>({type:'step',step:t.key,date:t.date,batch:b})));
+  const steps=state.batches.filter(b=>b.method==='growstand'&&!b.rotationId&&!b.actual?.ready).flatMap(b=>schedule(b).filter(t=>!t.done&&['sow','trueLeaves'].includes(t.key)&&t.date<=date&&(t.key!=='trueLeaves'||b.actual?.sow)).map(t=>({type:'step',step:t.key,date:t.date,batch:b})));
   const harvests=state.batches.filter(b=>b.method==='growstand'&&b.actual?.sow&&!b.actual?.ready).flatMap(b=>{const t=schedule(b).find(t=>t.key==='ready');return t&&t.date<=date?[{type:'harvest',date:t.date,batch:b,endDate:t.endDate}]:[]});
   return [...sowings,...steps,...harvests].sort((a,b)=>a.date.localeCompare(b.date));
 }
