@@ -1,3 +1,4 @@
+import {expandBurpeeSeeds} from './burpee-catalog.js';
 // Reference data checked 2026-10-22. Maturity and seasonal windows are estimates,
 // not guarantees. Existing saved batches retain their own dates and maturity days.
 const burpee = slug => `https://www.burpee.com/products/${slug}`;
@@ -10,7 +11,7 @@ const delphNote='Delphiniums prefer cool conditions and good drainage; summer he
 const pepper = name => ({...seed,name,variety:'Variety unspecified',weeks:9,offset:21,days:60,daysMax:90,basis:'transplant',note:'General sweet-pepper range, not a cultivar-specific promise. Start indoors about 8–10 weeks before planting out in warm conditions. Pick full-sized green fruit or allow another 2–4 weeks for ripe color. Replace these days with your packet’s variety-specific guidance.',sources:['https://www.burpee.com/blogs/edible-gardening/growing-peppers','https://www.burpee.com/blogs/faqs/why-is-my-pepper-green-and-not-red-60000729213']});
 export const plantKinds=['Vegetable','Fruit','Herb','Pollinator','Flower'];
 export const isFlower=b=>['Flower','Pollinator'].includes(b.kind);
-export const plants={
+const originalPlants={
   tomato:tomato('Sungold Hybrid',65,'tomato-sun-gold-hybrid-prod001012','Indeterminate cherry tomato; pick when golden-orange and ripe.'),
   verandaRed:tomato('Veranda Red Hybrid',55,'tomatoveranda-red-hybrid-prod500835','Compact, determinate patio cherry tomato.'),
   superSweet100:tomato('Super Sweet 100 Hybrid',70,'tomato-super-sweet-100-hybrid-prod001013','Indeterminate; clusters continue until frost.'),
@@ -45,3 +46,5 @@ export const plants={
   zinnia:{...seed,name:'Zinnia',variety:'Benary’s Giant',kind:'Pollinator',icon:'flower',weeks:4,offset:14,days:75,note:'Estimated days to first bloom from sowing. Direct sow after frost in warm soil.'},
   custom:{...seed,name:'Something new',variety:'',weeks:6,offset:14,days:60,note:'Use your seed packet for timing and local growing requirements.'}
 };
+
+export const plants=expandBurpeeSeeds(originalPlants);

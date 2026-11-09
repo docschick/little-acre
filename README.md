@@ -27,7 +27,9 @@ Run date calculation checks with `npm test`.
 - Indoor lettuce rotations with weekly, every-two-weeks, or twice-monthly sowings
 - In-app reminders for due plantings and estimated harvest readiness, with skip / restore and pause / resume controls
 - Editable sowing, hardening, and transplant dates; quantity, variety, garden spot, and field notes
-- 31 searchable plant presets, including all 26 requested vegetables, fruits, herbs, and flowers
+- 1,072 plant presets, including 1,040 new Burpee seed choices and the original named plants
+- Seed category → plant type → variety filtering, plus spelling-tolerant search such as “sungold” or “sun gold tomatoes”
+- Source-linked Burpee growing facts, lifecycle, sowing method, sun, mature size, and available harvest / bloom expectations
 - Variety-specific maturity values, optional harvest ranges, and editable bloom / harvest seasons
 - Days to harvest / bloom counted from sowing, transplanting, or several true leaves
 - Seasonal expectations beside the calendar for established flowers, fig, and blackberry plants
@@ -58,7 +60,9 @@ Reminders appear inside Little Acre when it is open, including after a date chan
 
 ## Catalog timing
 
-`catalog.js` contains the plant references and defaults; `planner.js` calculates milestones. Values were checked against Burpee, breeders, and NC State Extension on October 22, 2026. Source links are available in each preset.
+`catalog.js` contains the original plant references and defaults; `burpee-seed-data.js` adds a November 9, 2026 snapshot covering 1,058 Burpee seed products in the requested categories. Existing product matches reuse their stable IDs, adding 1,040 new presets. The original references were checked against Burpee, breeders, and NC State Extension on October 22, 2026. `planner.js` calculates milestones. Source links are available in the picker and planting details.
+
+See [Burpee seed catalog](docs/burpee-catalog.md) for category/search instructions, coverage, timing limitations, and the refresh workflow. Missing source values remain unset; new calendar dates use editable crop-level or generic starter profiles, not invented cultivar-specific packet instructions.
 
 - Tomato maturity counts from transplanting. New Sungold batches use Burpee’s 65-day value; saved batches keep their existing values.
 - New lettuce and Mini-Me watermelon batches follow Burpee’s direct-sowing convention: count from several true leaves. The default 14-day sow-to-true-leaves allowance is editable. Recording the actual true-leaf date updates harvest timing.
