@@ -82,3 +82,15 @@ The initial 27540 / zone 8a and approximate April 6 / November 3 frost dates are
 - https://plants.ces.ncsu.edu/plants/asclepias-tuberosa/
 
 Fonts use Google Fonts with system fallbacks. User garden records stay in the browser. Hosting via Sites was unavailable in this workspace; no remote site was created or published.
+
+### Garden conditions and spot history
+
+In **Settings**, record your garden location, ZIP, hardiness zone, spring and fall frost planning dates, and general garden notes. Location and ZIP are entered manually; changing them does not look up frost dates or a zone. Saved frost dates guide new plantings; existing planting dates stay as recorded.
+
+Under **Your garden spots**, use **Add spot** to name a bed, border, patio, or indoor growing area. Record mostly sun, part sun / part shade, mostly shade, indoors / grow lights, or leave exposure unrecorded. Spot notes can describe soil, watering, and seasonal light changes. Use **Edit spot** to update these details.
+
+When adding or editing a planting, choose a **Saved garden spot**, or keep a custom location. Changing the custom location detaches a selected spot. The planting detail shows the spot and exposure. **My garden → Garden conditions & spots** also opens Settings.
+
+Expand a spot’s **Planting & harvest history** to see plantings across seasons, quantities, personal notes, and individual dated harvests or flower observations. Open a planting to edit its **Garden notes**, **Log a harvest**, or **Log an observation**. Older plantings whose location matches a saved spot name appear in its history; editing that spot links those matching records so renaming does not lose their history. Amounts with different units remain separate.
+
+Conditions, spots, and journals are included in JSON backups. Older backups still import. Sun exposure records observations and does not automatically change dates or predict yields. This feature uses the existing local browser storage; account sign-in, cloud sync, and a separate test garden are future work.
