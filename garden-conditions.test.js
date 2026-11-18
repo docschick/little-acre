@@ -22,10 +22,11 @@ test('malformed conditions and dangling spot links are rejected on restore',()=>
     const d=backup();change(d);assert.equal(validBackup(d),false);
   }
 });
-test('spot history spans seasons, retains linked records after renaming, and includes legacy names',()=>{
+test('spot history spans seasons, sorts by actual sowing, retains linked records after renaming, and includes legacy names',()=>{
   const d=backup(),old={...structuredClone(d.batches[0]),id:'old',sow:'2026-03-01'};delete old.spotId;
+  d.batches[0].sow='2026-04-01';d.batches[0].actual.sow='2026-02-01';
   const other={...old,id:'shade',location:'Shaded yard'};
-  assert.deepEqual(spotPlantings(spot,[old,other,d.batches[0]]).map(b=>b.id),[d.batches[0].id,'old']);
+  assert.deepEqual(spotPlantings(spot,[old,other,d.batches[0]]).map(b=>b.id),['old',d.batches[0].id]);
   d.settings.spots[0].name='Renamed bed';
   assert.equal(spotFor(d.batches[0],d.settings).name,'Renamed bed');
   assert.equal(spotPlantings(d.settings.spots[0],d.batches).length,1);

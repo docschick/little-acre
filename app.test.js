@@ -74,6 +74,17 @@ for(const existing of [false,true])test(`changing lettuce preserves an entered s
   assert.match(ui.message,/Planting (added|updated)/);
 });
 
+test('unassigning a saved spot clears its auto-filled location',()=>{
+  const spot={id:'bed',name:'Sunny bed',sun:'sun',notes:''};
+  const state={settings:{...settings,spots:[spot]},batches:[]};
+  const seed=defaultBatch('lettuce',state.settings,'growstand','2026-11-09');seed.spotId=spot.id;seed.location=spot.name;
+  const ui=editor(state);ui.open(undefined,seed);
+  ui.form.elements.spotId.value='';ui.form.elements.spotId.onchange();
+  assert.equal(ui.form.elements.location.value,'');
+  ui.form.onsubmit({preventDefault(){}});
+  assert.equal(state.batches[0].spotId,'');assert.equal(state.batches[0].location,'');
+});
+
 test('switching a Burpee vegetable between indoor and direct sowing updates its maturity basis',()=>{
   const key=Object.keys(plants).find(key=>key.startsWith('burpee-')&&plants[key].seedCategory==='Vegetable'&&plants[key].days>0&&/Indoor/i.test(plants[key].burpeeAttributes?.['Sow Method']||'')&&/Outdoor/i.test(plants[key].burpeeAttributes?.['Sow Method']||''));
   assert.ok(key,'Catalog includes a Burpee vegetable with indoor and outdoor sowing methods');

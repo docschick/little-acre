@@ -139,7 +139,8 @@ function edit(id,seed){
     $('#catalog-next').onclick=()=>{pickerPage++;updatePicker()};
     $('#catalog-shortcuts').querySelectorAll('[data-quick-crop],[data-quick-query]').forEach(el=>el.onclick=()=>{pickerCategory='';pickerCrop=el.dataset.quickCrop||'';pickerQuery=el.dataset.quickQuery||'';resetPicker()});
     updatePicker();
-    f.elements.spotId.onchange=()=>{const spot=(state.settings.spots||[]).find(s=>s.id===f.elements.spotId.value);if(spot)f.elements.location.value=spot.name};
+    let lastSpot=(state.settings.spots||[]).find(s=>s.id===f.elements.spotId.value);
+    f.elements.spotId.onchange=()=>{const spot=(state.settings.spots||[]).find(s=>s.id===f.elements.spotId.value);if(spot)f.elements.location.value=spot.name;else if(lastSpot&&f.elements.location.value===lastSpot.name)f.elements.location.value='';lastSpot=spot};
     f.elements.location.oninput=()=>{const spot=(state.settings.spots||[]).find(s=>s.id===f.elements.spotId.value);if(spot&&f.elements.location.value!==spot.name)f.elements.spotId.value=''};
     f.elements.kind.onchange=()=>{capture();form()};
     f.elements.basis.onchange=()=>{capture();form()};
