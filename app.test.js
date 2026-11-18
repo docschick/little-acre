@@ -1,3 +1,4 @@
+import {spotOptions} from './garden-conditions.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -39,7 +40,7 @@ function editor(state){
   }
   const context=vm.createContext({
     state,plants,methods,addDays,defaultBatch,plantKinds,isFlower,expectations,structuredClone,seedCategories,seedCategory,cropName,catalogCrops,findSeeds,varietyPage,
-    modal,dialogHead:()=>'',growingGuide:()=>'',esc:String,
+    spotOptions,modal,dialogHead:()=>'',growingGuide:()=>'',esc:String,
     $:selector=>selector==='#plant-form'?form:control(selector),
     FormData:class{constructor(f){this.entries=Object.entries(f.elements).map(([key,input])=>[key,input.value])}[Symbol.iterator](){return this.entries[Symbol.iterator]()}},
     save(){},render(){},toast:value=>{message=value},today:()=> '2026-11-09',
@@ -190,4 +191,18 @@ test('explicitly choosing Sungold works and a new search requires a new choice o
   ui.form.onsubmit({preventDefault(){}});assert.equal(state.batches.length,0);
   ui.control('#catalog-keep').onclick();assert.equal(ui.control('#save-planting').disabled,false);
   ui.form.onsubmit({preventDefault(){}});assert.equal(state.batches[0].plant,'tomato');
+});
+
+test('assigned spots and personal notes survive variety changes and editing custom location detaches the link',()=>{
+  const state={settings:{...settings,spots:[{id:'bed',name:'Sunny bed',sun:'sun',notes:''}]},batches:[],rotations:[]};
+  const seed=defaultBatch('lettuce',state.settings,'growstand','2026-11-09'),ui=editor(state);ui.open(undefined,seed);
+  ui.form.elements.spotId.value='bed';ui.form.elements.spotId.onchange();
+  assert.equal(ui.form.elements.location.value,'Sunny bed');ui.form.elements.notes.value='Excellent germination';
+  const search=ui.control('#catalog-search');search.value='bibb';search.oninput({target:search});
+  ui.control('#catalog-results').children.find(el=>el.dataset.seedChoice==='bibb').onclick();
+  assert.equal(ui.form.elements.spotId.value,'bed');assert.equal(ui.form.elements.notes.value,'Excellent germination');
+  ui.form.onsubmit({preventDefault(){}});assert.equal(state.batches[0].spotId,'bed');
+  ui.open(state.batches[0].id);ui.form.elements.location.value='New patio';ui.form.elements.location.oninput();
+  assert.equal(ui.form.elements.spotId.value,'');ui.form.onsubmit({preventDefault(){}});
+  assert.equal(state.batches[0].spotId,'');assert.equal(state.batches[0].location,'New patio');
 });

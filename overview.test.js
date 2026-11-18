@@ -1,3 +1,4 @@
+import {spotFor} from './garden-conditions.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -18,7 +19,7 @@ function preview(batches){
     const key=selector.match(/\[data-([\w-]+)\]/)[1].replace(/-([a-z])/g,(_,c)=>c.toUpperCase());
     return this.buttons.filter(b=>Object.hasOwn(b.dataset,key));
   }};
-  const context=vm.createContext({...planner,crypto,structuredClone,
+  const context=vm.createContext({...planner,spotFor,crypto,structuredClone,
     localStorage:{getItem:()=>JSON.stringify({settings,demo:true,batches,rotations:[]})},
     document:{querySelector(selector){if(selector==='#app')return root;if(selector==='#clear-demo')return null;if(!nodes.has(selector))nodes.set(selector,{});return nodes.get(selector)}},
     indoorReminderMarkup:()=>'',bindGrowStand(){},
